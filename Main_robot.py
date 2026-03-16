@@ -255,7 +255,7 @@ def search_behavior():
     """
     SEARCH: No ball visible — rotate slowly to scan.
     """
-    print(" SEARCHING — rotating to scan")
+    print("🔍 SEARCHING — rotating to scan")
     movement_v2.turn_left(SEARCH_SPEED)
 
 
@@ -273,7 +273,7 @@ def approach_behavior():
     error           = ball_x - FRAME_CENTER
     turn_adjustment = Kp * error
 
-    print(f"   APPROACH | ball_x={ball_x}px | dist={distance:.1f}cm | "
+    print(f"  🎯 APPROACH | ball_x={ball_x}px | dist={distance:.1f}cm | "
           f"error={error:+d} | track_id={track_id}")
 
     if turn_adjustment > 10:
@@ -297,7 +297,7 @@ def collect_behavior(current_track_id):
 
     Returns True if beam confirmed collection, False if timed out.
     """
-    print(" COLLECTING — waiting for beam confirmation...")
+    print("🤖 COLLECTING — waiting for beam confirmation...")
 
     movement_v2.stop_drive()
     movement_v2.start_spinner()   # Keep spinning to pull ball in
@@ -307,7 +307,7 @@ def collect_behavior(current_track_id):
     while time.time() < deadline:
         if beam_broken():
             # Ball physically confirmed inside collector
-            print("   Beam broken — ball collected!")
+            print("  ✅ Beam broken — ball collected!")
             movement_v2.stop_spinner()
             movement_v2.lift_up(speed=80)
             time.sleep(1.0)
@@ -322,7 +322,7 @@ def collect_behavior(current_track_id):
         time.sleep(0.05)
 
     # Beam never triggered — ball wasn't actually collected
-    print("    Beam timeout — ball may have been missed")
+    print("  ⚠️  Beam timeout — ball may have been missed")
     movement_v2.stop_spinner()
     return False
 
@@ -331,7 +331,7 @@ def return_home_behavior():
     """
     RETURN HOME: Capacity full — drive back to deposit zone.
     """
-    print(" RETURNING HOME")
+    print("🏠 RETURNING HOME")
     encoder.reset()
     movement_v2.move_backward(BASE_SPEED)
     time.sleep(RETURN_HOME_TIME_S)
@@ -343,7 +343,7 @@ def drop_behavior():
     DROP: Lower lift to deposit all collected balls at home base.
     Clears collected_ids so robot can collect any remaining field balls.
     """
-    print(" DROPPING balls at home")
+    print("📦 DROPPING balls at home")
     movement_v2.lift_down(speed=80)
     time.sleep(1.5)
     movement_v2.stop_lift()
@@ -401,7 +401,7 @@ def run():
                 success = collect_behavior(active_track_id)
                 if success:
                     ball_count += 1
-                    print(f"   Total collected: {ball_count}/{MAX_CAPACITY}")
+                    print(f"  🏆 Total collected: {ball_count}/{MAX_CAPACITY}")
                 else:
                     # Missed — go back to search
                     state = 'SEARCHING'
@@ -427,22 +427,22 @@ def run():
 
             # --- State transitions ---
             if state == 'SEARCHING' and ball_detected:
-                print(f"Ball spotted (ID {track_id}) — APPROACHING")
+                print(f"👁️  Ball spotted (ID {track_id}) — APPROACHING")
                 active_track_id = track_id
                 state = 'APPROACHING'
 
             elif state == 'APPROACHING' and not ball_detected:
-                print("Ball lost — back to SEARCHING")
+                print("⚠️  Ball lost — back to SEARCHING")
                 state = 'SEARCHING'
 
             elif state == 'APPROACHING' and close_to_ball:
-                print(f"Close enough — COLLECTING (ID {track_id})")
+                print(f"📍 Close enough — COLLECTING (ID {track_id})")
                 active_track_id = track_id
                 state = 'COLLECTING'
 
             elif state == 'COLLECTING':
                 if ball_count >= MAX_CAPACITY:
-                    print(f"Full ({ball_count}) — RETURNING HOME")
+                    print(f"🎒 Full ({ball_count}) — RETURNING HOME")
                     state = 'RETURNING_HOME'
                 else:
                     state = 'SEARCHING'
@@ -457,7 +457,7 @@ def run():
             time.sleep(0.05)
 
     except KeyboardInterrupt:
-        print("\nStopped by user")
+        print("\n🛑 Stopped by user")
 
     finally:
         movement_v2.shutdown()
@@ -465,7 +465,7 @@ def run():
         cap.release()
         cv2.destroyAllWindows()
         GPIO.cleanup()
-        print("Shutdown complete")
+        print("✅ Shutdown complete")
 
 
 # =============================================================
